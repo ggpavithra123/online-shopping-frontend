@@ -1,4 +1,4 @@
-import axios from "axios";
+import api from "../utils/axios";
 import {
   productsRequest,
   productsSuccess,
@@ -7,7 +7,7 @@ import {
 
 export const getProducts = (
   keyword = "",
-  currentPage,
+  currentPage = 1,
   price,
   category,
   rating
@@ -15,19 +15,19 @@ export const getProducts = (
   try {
     dispatch(productsRequest());
 
-    let link = `http://localhost:8000/api/v1/products?page=${currentPage}`;
+    let link = `/api/v1/products?page=${currentPage}`;
 
     if (keyword) link += `&keyword=${keyword}`;
     if (price) link += `&price[gte]=${price[0]}&price[lte]=${price[1]}`;
     if (category) link += `&category=${category}`;
     if (rating) link += `&ratings=${rating}`;
 
-    const { data } = await axios.get(link);
+    const { data } = await api.get(link);
+
     dispatch(productsSuccess(data));
   } catch (error) {
-    dispatch(productsFail(error.response?.data?.message));
+    dispatch(
+      productsFail(error.response?.data?.message || "Failed to fetch products")
+    );
   }
 };
-
-
-

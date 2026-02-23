@@ -118,19 +118,22 @@ export const updatePassword = (formData) => async (dispatch) => {
 export const forgotPassword = (formData) => async (dispatch) => {
   try {
     dispatch(forgotPasswordRequest());
-    const config = {
-      headers: {
-        "Content-type": "application/json",
-      },
-    };
-    const { data } = await axios.post(
-      `http://localhost:8000/api/v1/password/forgot`,
+
+    const { data } = await api.post(
+      "/api/v1/password/forgot",
       formData,
-      config,
+      {
+        headers: { "Content-Type": "application/json" },
+      }
     );
+
     dispatch(forgotPasswordSuccess(data));
   } catch (error) {
-    dispatch(forgotPasswordFail(error.response.data.message));
+    dispatch(
+      forgotPasswordFail(
+        error.response?.data?.message || "Forgot password failed"
+      )
+    );
   }
 };
 

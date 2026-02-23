@@ -1,45 +1,64 @@
-import axios from "axios";
+import api from "../utils/axios";
 import {
   productRequest,
   productSuccess,
   productFail,
+  createReviewRequest,
+  createReviewSuccess,
+  createReviewFail,
+  newProductRequest,
+  newProductSuccess,
+  newProductFail,
+  deleteProductRequest,
+  deleteProductSuccess,
+  deleteProductFail,
+  updateProductRequest,
+  updateProductSuccess,
+  updateProductFail,
+  reviewsRequest,
+  reviewsSuccess,
+  reviewsFail,
+  deleteReviewRequest,
+  deleteReviewSuccess,
+  deleteReviewFail,
 } from "../slices/productSlice";
-import {  createReviewRequest, createReviewSuccess, createReviewFail, newProductRequest, newProductSuccess, newProductFail, deleteProductRequest, deleteProductSuccess, deleteProductFail, updateProductRequest, updateProductSuccess, updateProductFail, reviewsRequest, reviewsSuccess, reviewsFail, deleteReviewRequest, deleteReviewSuccess, deleteReviewFail } from '../slices/productSlice';
 
 
+// ✅ Get Single Product
 export const getProduct = (id) => async (dispatch) => {
   try {
     dispatch(productRequest());
 
-    const { data } = await axios.get(
-      `http://localhost:8000/api/v1/product/${id}`,
-      { withCredentials: true }
-    );
+    const { data } = await api.get(`/api/v1/product/${id}`);
 
     dispatch(productSuccess(data));
   } catch (error) {
     dispatch(
-      productFail(
-        error.response?.data?.message || "Product not found"
-      )
+      productFail(error.response?.data?.message || "Product not found")
     );
   }
 };
 
-export const createReview = reviewData => async (dispatch) => {
 
-    try {  
-        dispatch(createReviewRequest()) 
-        const config = {
-            headers : {
-                'Content-type': 'application/json'
-            }
-        }
-        const { data }  =  await axios.put(`http://localhost:8000/api/v1/review`,reviewData, config);
-        dispatch(createReviewSuccess(data))
-    } catch (error) {
-        //handle error
-        dispatch(createReviewFail(error.response.data.message))
-    }
-    
-}
+// ✅ Create Review
+export const createReview = (reviewData) => async (dispatch) => {
+  try {
+    dispatch(createReviewRequest());
+
+    const { data } = await api.put(
+      "/api/v1/review",
+      reviewData,
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+
+    dispatch(createReviewSuccess(data));
+  } catch (error) {
+    dispatch(
+      createReviewFail(
+        error.response?.data?.message || "Review failed"
+      )
+    );
+  }
+};
