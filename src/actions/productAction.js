@@ -5,6 +5,8 @@ import {
   productFail,
 } from "../slices/productSlice";
 import {  createReviewRequest, createReviewSuccess, createReviewFail, newProductRequest, newProductSuccess, newProductFail, deleteProductRequest, deleteProductSuccess, deleteProductFail, updateProductRequest, updateProductSuccess, updateProductFail, reviewsRequest, reviewsSuccess, reviewsFail, deleteReviewRequest, deleteReviewSuccess, deleteReviewFail } from '../slices/productSlice';
+
+
 export const getProduct = (id) => async (dispatch) => {
   try {
     dispatch(productRequest());
