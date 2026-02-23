@@ -11,6 +11,7 @@
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.13.4",
     "bootstrap": "^5.3.8",
+    "countries-list": "^3.2.2",
     "rc-slider": "^11.1.9",
     "rc-tooltip": "^6.4.0",
     "react": "^18.2.0",
@@ -26,12 +27,12 @@
     "redux-thunk": "^3.1.0",
     "web-vitals": "^2.1.4"
   },
- "scripts": {
-  "start": "react-scripts start",
-  "build": "CI=false react-scripts build",
-  "test": "react-scripts test",
-  "eject": "react-scripts eject"
-},
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "CI=false react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
   "eslintConfig": {
     "extends": [
       "react-app",
