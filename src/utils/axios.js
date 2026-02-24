@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL,
-  withCredentials: true
+  baseURL: "https://online-shopping-backend-qk2e.onrender.com",
+  withCredentials: true, // 🔥 VERY IMPORTANT
 });
 
 export default api;
