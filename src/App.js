@@ -28,8 +28,8 @@ import OrderDetail from "./components/order/OrderDetail";
 import ConfirmOrder from "./components/cart/ConfirmOrder";
 import Payment from "./components/cart/Payment";
 // import axios from 'axios';
-// import { Elements } from "@stripe/react-stripe-js";
-// import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -136,7 +136,16 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            {/* {stripeApiKey && <Route path='/payment' element={<ProtectedRoute><Elements stripe={loadStripe(stripeApiKey)}><Payment/></Elements></ProtectedRoute> } /> */}
+            <Route 
+  path="/payment"
+  element={
+    <ProtectedRoute>
+      <Elements stripe={loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY)}>
+        <Payment />
+      </Elements>
+    </ProtectedRoute>
+  }
+/>
           </Routes>
 
           <Footer />

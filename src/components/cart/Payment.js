@@ -1,34 +1,70 @@
-import axios from "axios";
-import { loadStripe } from "@stripe/stripe-js";
+import { useState } from "react";
+import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { useSelector } from "react-redux";
-
-const stripePromise = loadStripe("YOUR_PUBLISHABLE_KEY");
+import api from "../../utils/axios";
 
 export default function Payment() {
+
+    const stripe = useStripe();
+    const elements = useElements();
+
     const { items: cartItems } = useSelector(state => state.cartState);
     const orderInfo = JSON.parse(sessionStorage.getItem("orderInfo"));
+    const [loading, setLoading] = useState(false);
 
-    const handleCheckout = async () => {
-        const stripe = await stripePromise;
+    const submitHandler = async (e) => {
+        e.preventDefault();
+        setLoading(true);
 
-        const { data } = await axios.post("/api/v1/payment/process", {
-            items: cartItems
-        });
+        try {
 
-        await stripe.redirectToCheckout({
-            sessionId: data.id
-        });
+            const { data } = await api.post("/api/v1/payment/process", {
+                amount: Math.round(orderInfo.totalPrice * 100)
+            });
+
+            const result = await stripe.confirmCardPayment(
+                data.client_secret,
+                {
+                    payment_method: {
+                        card: elements.getElement(CardElement),
+                    },
+                }
+            );
+
+            if (result.error) {
+                alert(result.error.message);
+                setLoading(false);
+            } else {
+                if (result.paymentIntent.status === "succeeded") {
+                    alert("Payment Successful 🎉");
+                }
+            }
+
+        } catch (error) {
+            console.error(error);
+            alert("Payment failed");
+            setLoading(false);
+        }
     };
 
     return (
-        <div className="row wrapper">
-            <div className="col-10 col-lg-5 mx-auto">
-                <button
-                    onClick={handleCheckout}
-                    className="btn btn-primary btn-block py-3"
-                >
-                    Pay ${orderInfo?.totalPrice}
-                </button>
+        <div className="container mt-5">
+            <div className="card p-4 shadow">
+                <h3 className="mb-3">Pay ₹{orderInfo?.totalPrice}</h3>
+
+                <form onSubmit={submitHandler}>
+                    <div className="form-group mb-3">
+                        <CardElement className="form-control p-3" />
+                    </div>
+
+                    <button
+                        type="submit"
+                        className="btn btn-primary w-100"
+                        disabled={!stripe || loading}
+                    >
+                        {loading ? "Processing..." : "Pay Now"}
+                    </button>
+                </form>
             </div>
         </div>
     );
