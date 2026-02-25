@@ -40,11 +40,11 @@ function App() {
   useEffect(() => {
     // Dispatch thunk correctly
     dispatch(loadUser());
-    // async function getStripeApiKey(){
-    //   const {data} = await axios.get('/api/v1/stripeapi')
-    //   setStripeApiKey(data.stripeApiKey)
-    // }
-    // getStripeApiKey()
+    async function getStripeApiKey(){
+      const {data} = await axios.get('/api/v1/stripeapi')
+      setStripeApiKey(data.stripeApiKey)
+    }
+    getStripeApiKey()
   }, [dispatch]);
 
   return (
