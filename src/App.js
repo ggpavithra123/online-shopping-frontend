@@ -11,7 +11,7 @@ import ProductSearch from "./components/product/ProductSearch";
 import Register from "./components/user/Register";
 import Login from "./components/user/Login";
 import Shipping from "./components/cart/Shipping";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import Cart from "./components/cart/Cart";
 import { loadUser } from "./actions/userActions";
@@ -24,27 +24,23 @@ import ResetPassword from "./components/user/ResetPassword";
 import OrderSuccess from "./components/cart/OrderSuccess";
 import UserOrders from "./components/order/UserOrders";
 import OrderDetail from "./components/order/OrderDetail";
-
 import ConfirmOrder from "./components/cart/ConfirmOrder";
 import Payment from "./components/cart/Payment";
-// import axios from 'axios';
+
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
+
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+// ✅ Initialize Stripe OUTSIDE component
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY);
+
 function App() {
-  //const [stripeApiKey, setStripeApiKey] = useState("")
   const dispatch = useDispatch();
 
   useEffect(() => {
-    // Dispatch thunk correctly
     dispatch(loadUser());
-    // async function getStripeApiKey(){
-    //   const {data} = await axios.get('/api/v1/stripeapi')
-    //   setStripeApiKey(data.stripeApiKey)
-    // }
-    // getStripeApiKey()
   }, [dispatch]);
 
   return (
@@ -61,6 +57,11 @@ function App() {
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/password/forgot" element={<ForgotPassword />} />
+            <Route path="/password/reset/:token" element={<ResetPassword />} />
+
+            {/* Protected Routes */}
             <Route
               path="/myprofile"
               element={
@@ -69,6 +70,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
             <Route
               path="/myprofile/update"
               element={
@@ -77,6 +79,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
             <Route
               path="/myprofile/update/password"
               element={
@@ -85,9 +88,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route path="/password/forgot" element={<ForgotPassword />} />
-            <Route path="/password/reset/:token" element={<ResetPassword />} />
-            <Route path="/cart" element={<Cart />} />
+
             <Route
               path="/shipping"
               element={
@@ -96,6 +97,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
             <Route
               path="/order/confirm"
               element={
@@ -104,6 +106,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
             <Route
               path="/order/success"
               element={
@@ -112,6 +115,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
             <Route
               path="/orders"
               element={
@@ -120,6 +124,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
             <Route
               path="/order/:id"
               element={
@@ -128,24 +133,18 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+            {/* ✅ Stripe Payment Route */}
             <Route
               path="/payment"
               element={
                 <ProtectedRoute>
-                  <Payment />
+                  <Elements stripe={stripePromise}>
+                    <Payment />
+                  </Elements>
                 </ProtectedRoute>
               }
             />
-            <Route 
-  path="/payment"
-  element={
-    <ProtectedRoute>
-      <Elements stripe={loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY)}>
-        <Payment />
-      </Elements>
-    </ProtectedRoute>
-  }
-/>
           </Routes>
 
           <Footer />
