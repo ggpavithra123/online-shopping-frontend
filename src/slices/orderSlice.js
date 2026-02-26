@@ -47,7 +47,7 @@ const orderSlice = createSlice({
       return {
         ...state,
         loading: false,
-        userOrders: action.payload.orders,
+        userOrders: action.payload,
       };
     },
     userOrdersFail(state, action) {
