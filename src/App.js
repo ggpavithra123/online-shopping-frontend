@@ -119,9 +119,9 @@ function App() {
             <Route
               path="/orders"
               element={
-                <ProtectedRoute>
+                // <ProtectedRoute>
                   <UserOrders />
-                </ProtectedRoute>
+                // </ProtectedRoute>
               }
             />
 
