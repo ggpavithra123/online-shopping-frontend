@@ -33,14 +33,26 @@ export const createOrder = (order) => async (dispatch) => {
   }
 };
 
-// ✅ User Orders (FIXED)
 export const userOrders = () => async (dispatch) => {
   try {
+    console.log("🔵 UserOrders Action Triggered");
+
     dispatch(userOrdersRequest());
-    const { data } = await axios.get(`/api/v1/myorders`);
-    dispatch(userOrdersSuccess(data));
+
+    const { data } = await api.get("/api/v1/myorders");
+
+    console.log("🟢 User Orders API Response:", data);
+
+    dispatch(userOrdersSuccess(data.orders)); // ✅ send only orders array
+
   } catch (error) {
-    dispatch(userOrdersFail(error.response?.data?.message));
+    console.log("🔴 User Orders Error:", error);
+
+    dispatch(
+      userOrdersFail(
+        error.response?.data?.message || "Failed to fetch user orders"
+      )
+    );
   }
 };
 
