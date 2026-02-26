@@ -20,6 +20,7 @@ import {
 } from "../slices/orderSlice";
 
 import axios from "axios";
+import api from "../utils/axios";
 
 // ✅ Create Order
 export const createOrder = (order) => async (dispatch) => {
@@ -51,20 +52,15 @@ export const orderDetail = (id) => async (dispatch) => {
 
     dispatch(orderDetailRequest());
 
-    const { data } = await axios.get(`/api/v1/order/${id}`);
+    const { data } = await api.get(`/api/v1/order/${id}`);
 
     console.log("🟢 API Response:", data);
 
-    dispatch(orderDetailSuccess(data));
+    dispatch(orderDetailSuccess(data.order));
 
-    console.log("✅ orderDetailSuccess dispatched");
   } catch (error) {
     console.log("🔴 Order Detail Error:", error);
-    console.log("🔴 Error Response:", error.response);
-
-    dispatch(
-      orderDetailFail(error.response?.data?.message)
-    );
+    dispatch(orderDetailFail(error.response?.data?.message));
   }
 };
 
