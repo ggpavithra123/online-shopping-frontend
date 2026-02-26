@@ -1,168 +1,165 @@
-import { Fragment, useEffect } from "react";
-import { useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { Fragment, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link, useParams } from 'react-router-dom';
+import Loader from '../Layouts/Loader';
+import { orderDetail as orderDetailAction } from '../../actions/orderActions';
 
-import MetaData from "../Layouts/MetaData";
-import CheckoutSteps from "./CheckoutStep";
-import { validateShipping } from "./Shipping";
+export default function OrderDetail() {
+    const { orderDetail, loading } = useSelector(state => state.orderState);
 
-export default function ConfirmOrder() {
-  const navigate = useNavigate();
+    const {
+        shippingInfo = {},
+        user = {},
+        orderStatus = "Processing",
+        orderItems = [],
+        totalPrice = 0,
+        paymentInfo = {}
+    } = orderDetail;
 
-  const { shippingInfo, items: cartItems } = useSelector(
-    (state) => state.cartState
-  );
+    const isPaid = paymentInfo && paymentInfo.status === "succeeded";
+    const dispatch = useDispatch();
+    const { id } = useParams();
 
-  const { user } = useSelector((state) => state.authState);
+    useEffect(() => {
+        if (id) {
+            dispatch(orderDetailAction(id));
+        }
+    }, [dispatch, id]);
 
-  // ------------------ PRICE CALCULATIONS ------------------
-  const itemsPrice = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0
-  );
+    return (
+        <Fragment>
+            {loading ? <Loader /> :
+                <div className="container my-5">
+                    <div className="row">
 
-  const shippingPrice = itemsPrice > 200 ? 0 : 25;
+                        {/* LEFT SIDE */}
+                        <div className="col-lg-8">
 
-  const taxPrice = Number(itemsPrice * 0.05).toFixed(2);
+                            {/* Order Header */}
+                            <div className="card shadow-sm mb-4 border-0">
+                                <div className="card-body">
+                                    <h2 className="mb-3">
+                                        Order Details
+                                    </h2>
+                                    <h5 className="text-muted">
+                                        Order ID: <span className="text-dark">{orderDetail._id}</span>
+                                    </h5>
+                                </div>
+                            </div>
 
-  const totalPrice = (
-    itemsPrice +
-    shippingPrice +
-    Number(taxPrice)
-  ).toFixed(2);
+                            {/* Shipping Info */}
+                            <div className="card shadow-sm mb-4 border-0">
+                                <div className="card-body">
+                                    <h4 className="mb-3 text-primary">
+                                        <i className="fa fa-truck me-2"></i> Shipping Information
+                                    </h4>
+                                    <p><strong>Name:</strong> {user.name}</p>
+                                    <p><strong>Phone:</strong> {shippingInfo.phoneNo}</p>
+                                    <p>
+                                        <strong>Address:</strong><br />
+                                        {shippingInfo.address}, {shippingInfo.city},<br />
+                                        {shippingInfo.postalCode}, {shippingInfo.state}, {shippingInfo.country}
+                                    </p>
+                                </div>
+                            </div>
 
-  // ------------------ HANDLE PAYMENT ------------------
-  const processPayment = () => {
-    const orderData = {
-      itemsPrice,
-      shippingPrice,
-      taxPrice,
-      totalPrice,
-    };
+                            {/* Payment Info */}
+                            <div className="card shadow-sm mb-4 border-0">
+                                <div className="card-body">
+                                    <h4 className="mb-3 text-success">
+                                        <i className="fa fa-credit-card me-2"></i> Payment Status
+                                    </h4>
+                                    <span className={`badge ${isPaid ? "bg-success" : "bg-danger"} p-2`}>
+                                        {isPaid ? "PAID" : "NOT PAID"}
+                                    </span>
+                                </div>
+                            </div>
 
-    try {
-      sessionStorage.setItem("orderInfo", JSON.stringify(orderData));
-      navigate("/payment");
-    } catch (error) {
-      console.error("Session storage error:", error);
-    }
-  };
+                            {/* Order Status */}
+                            <div className="card shadow-sm mb-4 border-0">
+                                <div className="card-body">
+                                    <h4 className="mb-3 text-warning">
+                                        <i className="fa fa-info-circle me-2"></i> Order Status
+                                    </h4>
+                                    <span className={`badge ${orderStatus.includes("Delivered") ? "bg-success" : "bg-warning text-dark"} p-2`}>
+                                        {orderStatus}
+                                    </span>
+                                </div>
+                            </div>
 
-  // ------------------ VALIDATE SHIPPING ------------------
-  useEffect(() => {
-    validateShipping(shippingInfo, navigate);
-  }, [shippingInfo, navigate]);
+                            {/* Order Items */}
+                            <div className="card shadow-sm border-0">
+                                <div className="card-body">
+                                    <h4 className="mb-4 text-dark">
+                                        <i className="fa fa-shopping-cart me-2"></i> Ordered Items
+                                    </h4>
 
-  return (
-    <Fragment>
-      <MetaData title="Confirm Order" />
-      <CheckoutSteps shipping confirmOrder />
+                                    {orderItems.map((item, index) => (
+                                        <div key={index} className="row align-items-center mb-4 border-bottom pb-3">
+                                            <div className="col-3 col-md-2">
+                                                <img
+                                                    src={item.image}
+                                                    alt={item.name}
+                                                    className="img-fluid rounded"
+                                                />
+                                            </div>
 
-      <div className="row d-flex justify-content-between">
-        {/* ------------------ LEFT SIDE ------------------ */}
-        <div className="col-12 col-lg-8 mt-5 order-confirm">
-          <h4 className="mb-3">Shipping Info</h4>
+                                            <div className="col-9 col-md-4">
+                                                <Link
+                                                    to={`/product/${item.product}`}
+                                                    className="text-decoration-none fw-bold text-dark"
+                                                >
+                                                    {item.name}
+                                                </Link>
+                                            </div>
 
-          <p><strong>Name:</strong> {user?.name}</p>
-          <p><strong>Phone:</strong> {shippingInfo?.phoneNo}</p>
-          <p className="mb-4">
-            <strong>Address:</strong>{" "}
-            {shippingInfo?.address}, {shippingInfo?.city},{" "}
-            {shippingInfo?.postalCode}, {shippingInfo?.state},{" "}
-            {shippingInfo?.country}
-          </p>
+                                            <div className="col-6 col-md-3 mt-2 mt-md-0">
+                                                <span className="text-muted">
+                                                    ${item.price}
+                                                </span>
+                                            </div>
 
-          <hr />
+                                            <div className="col-6 col-md-3 mt-2 mt-md-0">
+                                                <span className="badge bg-secondary">
+                                                    Qty: {item.quantity}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
 
-          <h4 className="mt-4">Your Cart Items:</h4>
+                        {/* RIGHT SIDE - ORDER SUMMARY */}
+                        <div className="col-lg-4">
+                            <div className="card shadow-lg border-0 sticky-top" style={{ top: "100px" }}>
+                                <div className="card-body">
+                                    <h4 className="mb-4 text-center">Order Summary</h4>
 
-          {cartItems && cartItems.length > 0 ? (
-            cartItems.map((item) => (
-              <Fragment key={item.product}>
-                <div className="cart-item my-1">
-                  <div className="row align-items-center">
-                    <div className="col-4 col-lg-2">
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        height="45"
-                        width="65"
-                      />
+                                    <div className="d-flex justify-content-between mb-2">
+                                        <span>Items:</span>
+                                        <span>{orderItems.length}</span>
+                                    </div>
+
+                                    <div className="d-flex justify-content-between mb-3">
+                                        <span>Total Price:</span>
+                                        <strong>${totalPrice}</strong>
+                                    </div>
+
+                                    <hr />
+
+                                    <div className="text-center">
+                                        <span className="badge bg-dark p-2">
+                                            Thank you for shopping with us!
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
-
-                    <div className="col-5 col-lg-6">
-                      <Link to={`/product/${item.product}`}>
-                        {item.name}
-                      </Link>
-                    </div>
-
-                    <div className="col-3 col-lg-4 text-end">
-                      <p className="mb-0">
-                        {item.quantity} x ${item.price} ={" "}
-                        <strong>
-                          ${(item.quantity * item.price).toFixed(2)}
-                        </strong>
-                      </p>
-                    </div>
-                  </div>
                 </div>
-                <hr />
-              </Fragment>
-            ))
-          ) : (
-            <p>Your cart is empty.</p>
-          )}
-        </div>
-
-        {/* ------------------ RIGHT SIDE ------------------ */}
-        <div className="col-12 col-lg-3 my-4">
-          <div id="order_summary">
-            <h4>Order Summary</h4>
-            <hr />
-
-            <p>
-              Subtotal:
-              <span className="order-summary-values float-end">
-                ${itemsPrice.toFixed(2)}
-              </span>
-            </p>
-
-            <p>
-              Shipping:
-              <span className="order-summary-values float-end">
-                ${shippingPrice.toFixed(2)}
-              </span>
-            </p>
-
-            <p>
-              Tax:
-              <span className="order-summary-values float-end">
-                ${taxPrice}
-              </span>
-            </p>
-
-            <hr />
-
-            <p>
-              <strong>Total:</strong>
-              <span className="order-summary-values float-end">
-                ${totalPrice}
-              </span>
-            </p>
-
-            <hr />
-
-            <button
-              id="checkout_btn"
-              onClick={processPayment}
-              className="btn btn-primary w-100"
-              disabled={cartItems.length === 0}
-            >
-              Proceed to Payment
-            </button>
-          </div>
-        </div>
-      </div>
-    </Fragment>
-  );
+            }
+        </Fragment>
+    );
 }
