@@ -74,7 +74,7 @@ export default function Payment() {
 
         // 4️⃣ Clear cart + session
         dispatch(orderCompleted());
-        sessionStorage.removeItem("orderInfo");
+        //sessionStorage.removeItem("orderInfo");
 
         // 5️⃣ Navigate to Order Details page
         navigate(`/order/${orderData.order._id}`);
