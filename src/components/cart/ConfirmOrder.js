@@ -22,6 +22,7 @@ export default function ConfirmOrder() {
   );
 
   const shippingPrice = itemsPrice > 200 ? 0 : 25;
+
   const taxPrice = Number(itemsPrice * 0.05).toFixed(2);
 
   const totalPrice = (
@@ -57,141 +58,109 @@ export default function ConfirmOrder() {
       <MetaData title="Confirm Order" />
       <CheckoutSteps shipping confirmOrder />
 
-      <div className="container my-5">
-        <div className="row">
+      <div className="row d-flex justify-content-between">
+        {/* ------------------ LEFT SIDE ------------------ */}
+        <div className="col-12 col-lg-8 mt-5 order-confirm">
+          <h4 className="mb-3">Shipping Info</h4>
 
-          {/* LEFT SIDE */}
-          <div className="col-lg-8">
+          <p><strong>Name:</strong> {user?.name}</p>
+          <p><strong>Phone:</strong> {shippingInfo?.phoneNo}</p>
+          <p className="mb-4">
+            <strong>Address:</strong>{" "}
+            {shippingInfo?.address}, {shippingInfo?.city},{" "}
+            {shippingInfo?.postalCode}, {shippingInfo?.state},{" "}
+            {shippingInfo?.country}
+          </p>
 
-            {/* SHIPPING CARD */}
-            <div className="card shadow-sm mb-4 border-0">
-              <div className="card-body">
-                <h4 className="text-primary mb-3">
-                  <i className="fa fa-truck me-2"></i> Shipping Information
-                </h4>
+          <hr />
 
-                <p><strong>Name:</strong> {user?.name}</p>
-                <p><strong>Phone:</strong> {shippingInfo?.phoneNo}</p>
-                <p>
-                  <strong>Address:</strong><br />
-                  {shippingInfo?.address}, {shippingInfo?.city},<br />
-                  {shippingInfo?.postalCode}, {shippingInfo?.state},{" "}
-                  {shippingInfo?.country}
-                </p>
+          <h4 className="mt-4">Your Cart Items:</h4>
 
-                <span className="badge bg-info mt-2">
-                  Cash on Delivery / Online Payment
-                </span>
-              </div>
-            </div>
-
-            {/* CART ITEMS CARD */}
-            <div className="card shadow-sm border-0">
-              <div className="card-body">
-                <h4 className="mb-4">
-                  <i className="fa fa-shopping-cart me-2"></i> Cart Items
-                </h4>
-
-                {cartItems && cartItems.length > 0 ? (
-                  cartItems.map((item) => (
-                    <div
-                      key={item.product}
-                      className="row align-items-center mb-4 border-bottom pb-3"
-                    >
-                      <div className="col-3 col-md-2">
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="img-fluid rounded"
-                        />
-                      </div>
-
-                      <div className="col-9 col-md-4">
-                        <Link
-                          to={`/product/${item.product}`}
-                          className="fw-bold text-dark text-decoration-none"
-                        >
-                          {item.name}
-                        </Link>
-                      </div>
-
-                      <div className="col-6 col-md-3 mt-2 mt-md-0">
-                        <span className="text-muted">
-                          ${item.price} x {item.quantity}
-                        </span>
-                      </div>
-
-                      <div className="col-6 col-md-3 mt-2 mt-md-0 text-md-end">
-                        <strong>
-                          ${(item.price * item.quantity).toFixed(2)}
-                        </strong>
-                      </div>
+          {cartItems && cartItems.length > 0 ? (
+            cartItems.map((item) => (
+              <Fragment key={item.product}>
+                <div className="cart-item my-1">
+                  <div className="row align-items-center">
+                    <div className="col-4 col-lg-2">
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        height="45"
+                        width="65"
+                      />
                     </div>
-                  ))
-                ) : (
-                  <p>Your cart is empty.</p>
-                )}
-              </div>
-            </div>
 
-          </div>
+                    <div className="col-5 col-lg-6">
+                      <Link to={`/product/${item.product}`}>
+                        {item.name}
+                      </Link>
+                    </div>
 
-          {/* RIGHT SIDE - ORDER SUMMARY */}
-          <div className="col-lg-4">
-            <div
-              className="card shadow-lg border-0 sticky-top"
-              style={{ top: "100px" }}
-            >
-              <div className="card-body">
-                <h4 className="mb-4 text-center">Order Summary</h4>
-
-                <div className="d-flex justify-content-between mb-2">
-                  <span>Subtotal</span>
-                  <span>${itemsPrice.toFixed(2)}</span>
+                    <div className="col-3 col-lg-4 text-end">
+                      <p className="mb-0">
+                        {item.quantity} x ${item.price} ={" "}
+                        <strong>
+                          ${(item.quantity * item.price).toFixed(2)}
+                        </strong>
+                      </p>
+                    </div>
+                  </div>
                 </div>
-
-                <div className="d-flex justify-content-between mb-2">
-                  <span>Shipping</span>
-                  <span>
-                    {shippingPrice === 0 ? (
-                      <span className="text-success">FREE</span>
-                    ) : (
-                      `$${shippingPrice.toFixed(2)}`
-                    )}
-                  </span>
-                </div>
-
-                <div className="d-flex justify-content-between mb-3">
-                  <span>Tax (5%)</span>
-                  <span>${taxPrice}</span>
-                </div>
-
                 <hr />
+              </Fragment>
+            ))
+          ) : (
+            <p>Your cart is empty.</p>
+          )}
+        </div>
 
-                <div className="d-flex justify-content-between mb-3">
-                  <strong>Total</strong>
-                  <strong className="text-primary">
-                    ${totalPrice}
-                  </strong>
-                </div>
+        {/* ------------------ RIGHT SIDE ------------------ */}
+        <div className="col-12 col-lg-3 my-4">
+          <div id="order_summary">
+            <h4>Order Summary</h4>
+            <hr />
 
-                <button
-                  onClick={processPayment}
-                  className="btn btn-primary w-100 py-2"
-                  disabled={cartItems.length === 0}
-                >
-                  Proceed to Payment
-                </button>
+            <p>
+              Subtotal:
+              <span className="order-summary-values float-end">
+                ${itemsPrice.toFixed(2)}
+              </span>
+            </p>
 
-                <div className="text-center mt-3">
-                  <small className="text-muted">
-                    Secure Checkout • Encrypted Payment
-                  </small>
-                </div>
-              </div>
-            </div>
+            <p>
+              Shipping:
+              <span className="order-summary-values float-end">
+                ${shippingPrice.toFixed(2)}
+              </span>
+            </p>
+
+            <p>
+              Tax:
+              <span className="order-summary-values float-end">
+                ${taxPrice}
+              </span>
+            </p>
+
+            <hr />
+
+            <p>
+              <strong>Total:</strong>
+              <span className="order-summary-values float-end">
+                ${totalPrice}
+              </span>
+            </p>
+
+            <hr />
+
+            <button
+              id="checkout_btn"
+              onClick={processPayment}
+              className="btn btn-primary w-100"
+              disabled={cartItems.length === 0}
+            >
+              Proceed to Payment
+            </button>
           </div>
-
         </div>
       </div>
     </Fragment>
