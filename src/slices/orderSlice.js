@@ -37,25 +37,17 @@ const orderSlice = createSlice({
         error: null,
       };
     },
-    userOrdersRequest(state, action) {
-      return {
-        ...state,
-        loading: true,
-      };
+   // ================= USER ORDERS =================
+    userOrdersRequest: (state) => {
+      state.loading = true;
     },
-    userOrdersSuccess(state, action) {
-      return {
-        ...state,
-        loading: false,
-        userOrders: action.payload,
-      };
+    userOrdersSuccess: (state, action) => {
+      state.loading = false;
+      state.userOrders = action.payload; // must be array
     },
-    userOrdersFail(state, action) {
-      return {
-        ...state,
-        loading: false,
-        error: action.payload,
-      };
+    userOrdersFail: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
     },
     orderDetailRequest(state, action) {
       return {
