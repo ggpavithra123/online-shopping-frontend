@@ -46,11 +46,25 @@ export const userOrders = () => async (dispatch) => {
 // ✅ Order Details
 export const orderDetail = (id) => async (dispatch) => {
   try {
+    console.log("🔵 OrderDetail Action Triggered");
+    console.log("📌 Order ID:", id);
+
     dispatch(orderDetailRequest());
+
     const { data } = await axios.get(`/api/v1/order/${id}`);
+
+    console.log("🟢 API Response:", data);
+
     dispatch(orderDetailSuccess(data));
+
+    console.log("✅ orderDetailSuccess dispatched");
   } catch (error) {
-    dispatch(orderDetailFail(error.response?.data?.message));
+    console.log("🔴 Order Detail Error:", error);
+    console.log("🔴 Error Response:", error.response);
+
+    dispatch(
+      orderDetailFail(error.response?.data?.message)
+    );
   }
 };
 

@@ -11,8 +11,10 @@ export default function OrderDetail () {
     const {id } = useParams();
 
     useEffect(() => {
-        dispatch(orderDetailAction(id))
-    },[id])
+    if(id){
+        dispatch(orderDetailAction(id));
+    }
+}, [dispatch, id]);
 
     return (
         <Fragment>
