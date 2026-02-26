@@ -1,15 +1,20 @@
 import { useState } from "react";
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import api from "../../utils/axios";
+import { orderCompleted } from "../../slices/cartSlice";
 
 export default function Payment() {
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const { items: cartItems } = useSelector((state) => state.cartState);
+  const { items: cartItems, shippingInfo } = useSelector(
+    (state) => state.cartState
+  );
+
   const orderInfo = JSON.parse(sessionStorage.getItem("orderInfo"));
   const [loading, setLoading] = useState(false);
 
@@ -19,18 +24,19 @@ export default function Payment() {
     if (!stripe || !elements) return;
 
     if (!orderInfo) {
-      alert("Order information missing.");
+      alert("Order information missing. Please try again.");
       return;
     }
 
     setLoading(true);
 
     try {
-      // ✅ IMPORTANT: Add leading slash
+      // 1️⃣ Create Stripe PaymentIntent
       const { data } = await api.post("/api/v1/payment/process", {
-        amount: Math.round(orderInfo.totalPrice * 100),
+        amount: Math.round(orderInfo.totalPrice * 100), // convert to paise
       });
 
+      // 2️⃣ Confirm Payment
       const result = await stripe.confirmCardPayment(
         data.client_secret,
         {
@@ -43,8 +49,35 @@ export default function Payment() {
       if (result.error) {
         alert(result.error.message);
         setLoading(false);
-      } else if (result.paymentIntent.status === "succeeded") {
-        navigate("/order/success");
+        return;
+      }
+
+      // 3️⃣ If Payment Successful → Create Order
+      if (result.paymentIntent.status === "succeeded") {
+        const order = {
+          orderItems: cartItems,
+          shippingInfo,
+          itemsPrice: orderInfo.itemsPrice,
+          shippingPrice: orderInfo.shippingPrice,
+          taxPrice: orderInfo.taxPrice,
+          totalPrice: orderInfo.totalPrice,
+          paymentInfo: {
+            id: result.paymentIntent.id,
+            status: result.paymentIntent.status,
+          },
+        };
+
+        const { data: orderData } = await api.post(
+          "/api/v1/order/new",
+          order
+        );
+
+        // 4️⃣ Clear cart + session
+        dispatch(orderCompleted());
+        sessionStorage.removeItem("orderInfo");
+
+        // 5️⃣ Navigate to Order Details page
+        navigate(`/order/${orderData.order._id}`);
       }
     } catch (error) {
       console.error("Payment Error:", error.response || error);
