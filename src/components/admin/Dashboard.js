@@ -7,7 +7,7 @@ import {adminOrders as adminOrdersAction} from '../../actions/orderActions'
 import { Link } from "react-router-dom";
 
 export default function Dashboard () {
-    const { products = [] } = useSelector( state => state.productsState);
+    const { products = [] } = useSelector( state => state.products)
     const { adminOrders = [] } = useSelector( state => state.orderState);
     const { users = [] } = useSelector( state => state.userState);
     const dispatch = useDispatch();
