@@ -12,7 +12,7 @@ export default function UpdateProduct() {
   const navigate = useNavigate();
 
   const { loading, isProductUpdated, error, product } = useSelector(
-    (state) => state.products,
+    (state) => state.product,
   );
 
   const [name, setName] = useState("");
