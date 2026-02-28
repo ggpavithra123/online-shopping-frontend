@@ -80,7 +80,7 @@ export const orderDetail = (id) => async (dispatch) => {
 export const adminOrders = () => async (dispatch) => {
   try {
     dispatch(adminOrdersRequest());
-    const { data } = await axios.get(`/api/v1/admin/orders`);
+    const { data } = await api.get(`/api/v1/admin/orders`);
     dispatch(adminOrdersSuccess(data));
   } catch (error) {
     dispatch(adminOrdersFail(error.response?.data?.message));
