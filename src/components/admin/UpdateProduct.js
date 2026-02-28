@@ -7,6 +7,14 @@ import { clearError, clearProductUpdated } from "../../slices/productSlice";
 import { toast } from "react-toastify";
 
 export default function UpdateProduct() {
+
+    const { id: productId } = useParams();
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+
+    const { loading, isProductUpdated, error, product } =
+        useSelector((state) => state.products);
+
     const [name, setName] = useState("");
     const [price, setPrice] = useState("");
     const [description, setDescription] = useState("");
@@ -14,13 +22,8 @@ export default function UpdateProduct() {
     const [stock, setStock] = useState(0);
     const [seller, setSeller] = useState("");
     const [images, setImages] = useState([]);
-    const [imagesCleared, setImagesCleared] = useState(false);
     const [imagesPreview, setImagesPreview] = useState([]);
-
-    const { id: productId } = useParams();
-
-    const { loading, isProductUpdated, error, product } =
-        useSelector((state) => state.products);
+    const [imagesCleared, setImagesCleared] = useState(false);
 
     const categories = [
         "Electronics",
@@ -37,8 +40,50 @@ export default function UpdateProduct() {
         "Home",
     ];
 
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
+    // 🔹 Fetch product when component loads
+    useEffect(() => {
+        dispatch(getProduct(productId));
+    }, [dispatch, productId]);
+
+    // 🔹 Auto fill form when product changes
+    useEffect(() => {
+        if (!product) return;
+
+        setName(product.name || "");
+        setPrice(product.price || "");
+        setStock(product.stock || 0);
+        setDescription(product.description || "");
+        setSeller(product.seller || "");
+        setCategory(product.category || "");
+
+        if (product.images && product.images.length > 0) {
+            const imgs = product.images.map((img) => img.image);
+            setImagesPreview(imgs);
+        } else {
+            setImagesPreview([]);
+        }
+    }, [product]);
+
+    // 🔹 Handle success & error
+    useEffect(() => {
+        if (isProductUpdated) {
+            toast("Product Updated Successfully!", {
+                type: "success",
+                position: "bottom-center",
+            });
+
+            dispatch(clearProductUpdated());
+            navigate("/admin/products");
+        }
+
+        if (error) {
+            toast(error, {
+                type: "error",
+                position: "bottom-center",
+            });
+            dispatch(clearError());
+        }
+    }, [isProductUpdated, error, dispatch, navigate]);
 
     const onImagesChange = (e) => {
         const files = Array.from(e.target.files);
@@ -51,13 +96,19 @@ export default function UpdateProduct() {
 
             reader.onload = () => {
                 if (reader.readyState === 2) {
-                    setImagesPreview((oldArray) => [...oldArray, reader.result]);
-                    setImages((oldArray) => [...oldArray, file]);
+                    setImagesPreview((old) => [...old, reader.result]);
+                    setImages((old) => [...old, file]);
                 }
             };
 
             reader.readAsDataURL(file);
         });
+    };
+
+    const clearImagesHandler = () => {
+        setImages([]);
+        setImagesPreview([]);
+        setImagesCleared(true);
     };
 
     const submitHandler = (e) => {
@@ -70,65 +121,14 @@ export default function UpdateProduct() {
         formData.append("description", description);
         formData.append("seller", seller);
         formData.append("category", category);
+        formData.append("imagesCleared", imagesCleared);
 
         images.forEach((image) => {
             formData.append("images", image);
         });
 
-        formData.append("imagesCleared", imagesCleared);
-
         dispatch(updateProduct(productId, formData));
     };
-
-    const clearImagesHandler = () => {
-        setImages([]);
-        setImagesPreview([]);
-        setImagesCleared(true);
-    };
-
-    // ✅ Handle success & error + fetch product safely
-    useEffect(() => {
-        if (isProductUpdated) {
-            toast("Product Updated Successfully!", {
-                type: "success",
-                position: "bottom-center",
-            });
-
-            dispatch(clearProductUpdated());
-            navigate("/admin/products");
-            return;
-        }
-
-        if (error) {
-            toast(error, {
-                position: "bottom-center",
-                type: "error",
-            });
-            dispatch(clearError());
-            return;
-        }
-
-        if (!product || product._id !== productId) {
-            dispatch(getProduct(productId));
-        }
-    }, [dispatch, isProductUpdated, error, productId, product, navigate]);
-
-    // ✅ Safely set product data
-    useEffect(() => {
-        if (product && product._id === productId) {
-            setName(product.name || "");
-            setPrice(product.price || "");
-            setStock(product.stock || 0);
-            setDescription(product.description || "");
-            setSeller(product.seller || "");
-            setCategory(product.category || "");
-
-            if (product.images && product.images.length > 0) {
-                const imgs = product.images.map((img) => img.image);
-                setImagesPreview(imgs);
-            }
-        }
-    }, [product, productId]);
 
     return (
         <div className="row">
@@ -141,7 +141,7 @@ export default function UpdateProduct() {
                     <div className="wrapper my-5">
                         <form
                             onSubmit={submitHandler}
-                            className="shadow-lg"
+                            className="shadow-lg p-4"
                             encType="multipart/form-data"
                         >
                             <h1 className="mb-4">Update Product</h1>
@@ -170,12 +170,12 @@ export default function UpdateProduct() {
                                 <label>Description</label>
                                 <textarea
                                     className="form-control"
-                                    rows="6"
+                                    rows="5"
                                     value={description}
                                     onChange={(e) =>
                                         setDescription(e.target.value)
                                     }
-                                ></textarea>
+                                />
                             </div>
 
                             <div className="form-group">
@@ -233,24 +233,22 @@ export default function UpdateProduct() {
                                 {imagesPreview.length > 0 && (
                                     <span
                                         onClick={clearImagesHandler}
-                                        style={{
-                                            cursor: "pointer",
-                                            marginLeft: "10px",
-                                        }}
+                                        style={{ cursor: "pointer" }}
+                                        className="ml-2"
                                     >
                                         🗑 Clear
                                     </span>
                                 )}
 
-                                <div>
-                                    {imagesPreview.map((image) => (
+                                <div className="mt-2">
+                                    {imagesPreview.map((image, index) => (
                                         <img
-                                            key={image}
+                                            key={index}
                                             src={image}
                                             alt="Preview"
                                             width="55"
                                             height="52"
-                                            className="mt-3 mr-2"
+                                            className="mr-2 mt-2"
                                         />
                                     ))}
                                 </div>
@@ -259,7 +257,7 @@ export default function UpdateProduct() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="btn btn-block py-3"
+                                className="btn btn-primary btn-block py-2"
                             >
                                 UPDATE
                             </button>
