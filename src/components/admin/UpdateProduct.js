@@ -46,7 +46,22 @@ export default function UpdateProduct() {
   }, [dispatch, productId]);
 
   useEffect(() => {
-    if (!product) return;
+    console.log("========== UPDATE PRODUCT DEBUG ==========");
+
+    if (!product) {
+      console.log("Product is NULL or UNDEFINED");
+      return;
+    }
+
+    console.log("Full Product Object:", product);
+    console.log("Product ID:", product._id);
+    console.log("Name:", product.name);
+    console.log("Price:", product.price);
+    console.log("Stock:", product.stock);
+    console.log("Description:", product.description);
+    console.log("Seller:", product.seller);
+    console.log("Category:", product.category);
+    console.log("Images Array:", product.images);
 
     setName(product.name || "");
     setPrice(product.price || "");
@@ -55,11 +70,19 @@ export default function UpdateProduct() {
     setSeller(product.seller || "");
     setCategory(product.category || "");
 
-    if (product.images) {
-      setImagesPreview(product.images.map((img) => img.image));
+    if (product.images && product.images.length > 0) {
+      const imageList = product.images.map((img, index) => {
+        console.log(`Image ${index + 1}:`, img);
+        return img.image;
+      });
+
+      setImagesPreview(imageList);
+    } else {
+      console.log("No images found in product");
+      setImagesPreview([]);
     }
 
-    console.log("PRODUCT STATE:", product);
+    console.log("==========================================");
   }, [product]);
 
   // 🔹 Handle success & error
