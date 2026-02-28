@@ -15,6 +15,9 @@ export default function UpdateProduct() {
     (state) => state.product,
   );
 
+  const state = useSelector(state => state);
+console.log("FULL REDUX STATE:", state);
+
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
