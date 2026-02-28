@@ -22,7 +22,7 @@ export const getProduct = (id) => async (dispatch) => {
 
     const { data } = await api.get(`/api/v1/product/${id}`);
 
-    dispatch(productSuccess(data));
+    dispatch(productSuccess(data.product));
   } catch (error) {
     dispatch(
       productFail(error.response?.data?.message || "Product not found")
