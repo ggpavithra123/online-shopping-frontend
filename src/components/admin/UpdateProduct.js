@@ -42,8 +42,9 @@ export default function UpdateProduct() {
 
   // 🔹 Fetch product when component loads
   useEffect(() => {
-    dispatch(getProduct(productId));
-  }, [dispatch, productId]);
+  console.log("Fetching product with ID:", productId);
+  dispatch(getProduct(productId));
+}, [dispatch, productId]);
 
   useEffect(() => {
     console.log("========== UPDATE PRODUCT DEBUG ==========");

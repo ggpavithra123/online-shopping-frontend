@@ -5,7 +5,7 @@ const productSlice = createSlice({
     name: 'product',
     initialState: {
         loading: false,
-        product: {},
+        product: null,
         isReviewSubmitted: false,
         isProductCreated: false,
         isProductDeleted: false,

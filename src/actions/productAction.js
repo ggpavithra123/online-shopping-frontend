@@ -15,17 +15,26 @@ from "../slices/productsSlice";
 import {  createReviewRequest, createReviewSuccess, createReviewFail, newProductRequest, newProductSuccess, newProductFail, deleteProductRequest, deleteProductSuccess, deleteProductFail, updateProductRequest, updateProductSuccess, updateProductFail, reviewsRequest, reviewsSuccess, reviewsFail, deleteReviewRequest, deleteReviewSuccess, deleteReviewFail } from '../slices/productSlice';
 
 
-// ✅ Get Single Product
 export const getProduct = (id) => async (dispatch) => {
   try {
     dispatch(productRequest());
 
+    console.log("Calling API for product:", id);
+
     const { data } = await api.get(`/api/v1/product/${id}`);
 
+    console.log("API RESPONSE:", data);
+
+    // 🔥 VERY IMPORTANT
     dispatch(productSuccess(data.product));
+
   } catch (error) {
+    console.log("API ERROR:", error.response?.data);
+
     dispatch(
-      productFail(error.response?.data?.message || "Product not found")
+      productFail(
+        error.response?.data?.message || "Failed to fetch product"
+      )
     );
   }
 };
