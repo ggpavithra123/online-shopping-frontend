@@ -67,18 +67,28 @@ export const getAdminProducts  =  async (dispatch) => {
     
 }
 
-export const createNewProduct  =  productData => async (dispatch) => {
+export const createNewProduct = productData => async (dispatch) => {
+  try {
+    dispatch(newProductRequest());
 
-    try {  
-        dispatch(newProductRequest()) 
-        const { data }  =  await api.post(`/api/v1/admin/product/new`, productData);
-        dispatch(newProductSuccess(data))
-    } catch (error) {
-        //handle error
-        dispatch(newProductFail(error.response.data.message))
-    }
-    
-}
+    const config = {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    };
+
+    const { data } = await api.post(
+      `/api/v1/admin/product/new`,
+      productData,
+      config
+    );
+
+    dispatch(newProductSuccess(data));
+
+  } catch (error) {
+    dispatch(newProductFail(error.response?.data?.message));
+  }
+};
 
 export const deleteProduct  =  id => async (dispatch) => {
 
