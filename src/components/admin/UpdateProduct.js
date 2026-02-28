@@ -7,264 +7,254 @@ import { clearError, clearProductUpdated } from "../../slices/productSlice";
 import { toast } from "react-toastify";
 
 export default function UpdateProduct() {
+  const { id: productId } = useParams();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-    const { id: productId } = useParams();
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
+  const { loading, isProductUpdated, error, product } = useSelector(
+    (state) => state.products,
+  );
 
-    const { loading, isProductUpdated, error, product } =
-        useSelector((state) => state.products);
+  const [name, setName] = useState("");
+  const [price, setPrice] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
+  const [stock, setStock] = useState(0);
+  const [seller, setSeller] = useState("");
+  const [images, setImages] = useState([]);
+  const [imagesPreview, setImagesPreview] = useState([]);
+  const [imagesCleared, setImagesCleared] = useState(false);
 
-    const [name, setName] = useState("");
-    const [price, setPrice] = useState("");
-    const [description, setDescription] = useState("");
-    const [category, setCategory] = useState("");
-    const [stock, setStock] = useState(0);
-    const [seller, setSeller] = useState("");
-    const [images, setImages] = useState([]);
-    const [imagesPreview, setImagesPreview] = useState([]);
-    const [imagesCleared, setImagesCleared] = useState(false);
+  const categories = [
+    "Electronics",
+    "Mobile Phones",
+    "Laptops",
+    "Accessories",
+    "Headphones",
+    "Food",
+    "Books",
+    "Clothes/Shoes",
+    "Beauty/Health",
+    "Sports",
+    "Outdoor",
+    "Home",
+  ];
 
-    const categories = [
-        "Electronics",
-        "Mobile Phones",
-        "Laptops",
-        "Accessories",
-        "Headphones",
-        "Food",
-        "Books",
-        "Clothes/Shoes",
-        "Beauty/Health",
-        "Sports",
-        "Outdoor",
-        "Home",
-    ];
+  // 🔹 Fetch product when component loads
+  useEffect(() => {
+    dispatch(getProduct(productId));
+  }, [dispatch, productId]);
 
-    // 🔹 Fetch product when component loads
-    useEffect(() => {
-        dispatch(getProduct(productId));
-    }, [dispatch, productId]);
+  useEffect(() => {
+    if (!product) return;
 
-    // 🔹 Auto fill form when product changes
-    useEffect(() => {
-        if (!product) return;
+    setName(product.name || "");
+    setPrice(product.price || "");
+    setStock(product.stock || 0);
+    setDescription(product.description || "");
+    setSeller(product.seller || "");
+    setCategory(product.category || "");
 
-        setName(product.name || "");
-        setPrice(product.price || "");
-        setStock(product.stock || 0);
-        setDescription(product.description || "");
-        setSeller(product.seller || "");
-        setCategory(product.category || "");
+    if (product.images) {
+      setImagesPreview(product.images.map((img) => img.image));
+    }
 
-        if (product.images && product.images.length > 0) {
-            const imgs = product.images.map((img) => img.image);
-            setImagesPreview(imgs);
-        } else {
-            setImagesPreview([]);
+    console.log("PRODUCT STATE:", product);
+  }, [product]);
+
+  // 🔹 Handle success & error
+  useEffect(() => {
+    if (isProductUpdated) {
+      toast("Product Updated Successfully!", {
+        type: "success",
+        position: "bottom-center",
+      });
+
+      dispatch(clearProductUpdated());
+      navigate("/admin/products");
+    }
+
+    if (error) {
+      toast(error, {
+        type: "error",
+        position: "bottom-center",
+      });
+      dispatch(clearError());
+    }
+  }, [isProductUpdated, error, dispatch, navigate]);
+
+  const onImagesChange = (e) => {
+    const files = Array.from(e.target.files);
+
+    setImages([]);
+    setImagesPreview([]);
+
+    files.forEach((file) => {
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        if (reader.readyState === 2) {
+          setImagesPreview((old) => [...old, reader.result]);
+          setImages((old) => [...old, file]);
         }
-    }, [product]);
+      };
 
-    // 🔹 Handle success & error
-    useEffect(() => {
-        if (isProductUpdated) {
-            toast("Product Updated Successfully!", {
-                type: "success",
-                position: "bottom-center",
-            });
+      reader.readAsDataURL(file);
+    });
+  };
 
-            dispatch(clearProductUpdated());
-            navigate("/admin/products");
-        }
+  const clearImagesHandler = () => {
+    setImages([]);
+    setImagesPreview([]);
+    setImagesCleared(true);
+  };
 
-        if (error) {
-            toast(error, {
-                type: "error",
-                position: "bottom-center",
-            });
-            dispatch(clearError());
-        }
-    }, [isProductUpdated, error, dispatch, navigate]);
+  const submitHandler = (e) => {
+    e.preventDefault();
 
-    const onImagesChange = (e) => {
-        const files = Array.from(e.target.files);
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("price", price);
+    formData.append("stock", stock);
+    formData.append("description", description);
+    formData.append("seller", seller);
+    formData.append("category", category);
+    formData.append("imagesCleared", imagesCleared);
 
-        setImages([]);
-        setImagesPreview([]);
+    images.forEach((image) => {
+      formData.append("images", image);
+    });
 
-        files.forEach((file) => {
-            const reader = new FileReader();
+    dispatch(updateProduct(productId, formData));
+  };
 
-            reader.onload = () => {
-                if (reader.readyState === 2) {
-                    setImagesPreview((old) => [...old, reader.result]);
-                    setImages((old) => [...old, file]);
-                }
-            };
+  return (
+    <div className="row">
+      <div className="col-12 col-md-2">
+        <Sidebar />
+      </div>
 
-            reader.readAsDataURL(file);
-        });
-    };
+      <div className="col-12 col-md-10">
+        <Fragment>
+          <div className="wrapper my-5">
+            <form
+              onSubmit={submitHandler}
+              className="shadow-lg p-4"
+              encType="multipart/form-data"
+            >
+              <h1 className="mb-4">Update Product</h1>
 
-    const clearImagesHandler = () => {
-        setImages([]);
-        setImagesPreview([]);
-        setImagesCleared(true);
-    };
+              <div className="form-group">
+                <label>Name</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
 
-    const submitHandler = (e) => {
-        e.preventDefault();
+              <div className="form-group">
+                <label>Price</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                />
+              </div>
 
-        const formData = new FormData();
-        formData.append("name", name);
-        formData.append("price", price);
-        formData.append("stock", stock);
-        formData.append("description", description);
-        formData.append("seller", seller);
-        formData.append("category", category);
-        formData.append("imagesCleared", imagesCleared);
+              <div className="form-group">
+                <label>Description</label>
+                <textarea
+                  className="form-control"
+                  rows="5"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+              </div>
 
-        images.forEach((image) => {
-            formData.append("images", image);
-        });
+              <div className="form-group">
+                <label>Category</label>
+                <select
+                  className="form-control"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                >
+                  <option value="">Select</option>
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-        dispatch(updateProduct(productId, formData));
-    };
+              <div className="form-group">
+                <label>Stock</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={stock}
+                  onChange={(e) => setStock(e.target.value)}
+                />
+              </div>
 
-    return (
-        <div className="row">
-            <div className="col-12 col-md-2">
-                <Sidebar />
-            </div>
+              <div className="form-group">
+                <label>Seller</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={seller}
+                  onChange={(e) => setSeller(e.target.value)}
+                />
+              </div>
 
-            <div className="col-12 col-md-10">
-                <Fragment>
-                    <div className="wrapper my-5">
-                        <form
-                            onSubmit={submitHandler}
-                            className="shadow-lg p-4"
-                            encType="multipart/form-data"
-                        >
-                            <h1 className="mb-4">Update Product</h1>
+              <div className="form-group">
+                <label>Images</label>
 
-                            <div className="form-group">
-                                <label>Name</label>
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                />
-                            </div>
+                <input
+                  type="file"
+                  className="form-control"
+                  multiple
+                  onChange={onImagesChange}
+                />
 
-                            <div className="form-group">
-                                <label>Price</label>
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    value={price}
-                                    onChange={(e) => setPrice(e.target.value)}
-                                />
-                            </div>
+                {imagesPreview.length > 0 && (
+                  <span
+                    onClick={clearImagesHandler}
+                    style={{ cursor: "pointer" }}
+                    className="ml-2"
+                  >
+                    🗑 Clear
+                  </span>
+                )}
 
-                            <div className="form-group">
-                                <label>Description</label>
-                                <textarea
-                                    className="form-control"
-                                    rows="5"
-                                    value={description}
-                                    onChange={(e) =>
-                                        setDescription(e.target.value)
-                                    }
-                                />
-                            </div>
+                <div className="mt-2">
+                  {imagesPreview.map((image, index) => (
+                    <img
+                      key={index}
+                      src={image}
+                      alt="Preview"
+                      width="55"
+                      height="52"
+                      className="mr-2 mt-2"
+                    />
+                  ))}
+                </div>
+              </div>
 
-                            <div className="form-group">
-                                <label>Category</label>
-                                <select
-                                    className="form-control"
-                                    value={category}
-                                    onChange={(e) =>
-                                        setCategory(e.target.value)
-                                    }
-                                >
-                                    <option value="">Select</option>
-                                    {categories.map((cat) => (
-                                        <option key={cat} value={cat}>
-                                            {cat}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="form-group">
-                                <label>Stock</label>
-                                <input
-                                    type="number"
-                                    className="form-control"
-                                    value={stock}
-                                    onChange={(e) =>
-                                        setStock(e.target.value)
-                                    }
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label>Seller</label>
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    value={seller}
-                                    onChange={(e) =>
-                                        setSeller(e.target.value)
-                                    }
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label>Images</label>
-
-                                <input
-                                    type="file"
-                                    className="form-control"
-                                    multiple
-                                    onChange={onImagesChange}
-                                />
-
-                                {imagesPreview.length > 0 && (
-                                    <span
-                                        onClick={clearImagesHandler}
-                                        style={{ cursor: "pointer" }}
-                                        className="ml-2"
-                                    >
-                                        🗑 Clear
-                                    </span>
-                                )}
-
-                                <div className="mt-2">
-                                    {imagesPreview.map((image, index) => (
-                                        <img
-                                            key={index}
-                                            src={image}
-                                            alt="Preview"
-                                            width="55"
-                                            height="52"
-                                            className="mr-2 mt-2"
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="btn btn-primary btn-block py-2"
-                            >
-                                UPDATE
-                            </button>
-                        </form>
-                    </div>
-                </Fragment>
-            </div>
-        </div>
-    );
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn btn-primary btn-block py-2"
+              >
+                UPDATE
+              </button>
+            </form>
+          </div>
+        </Fragment>
+      </div>
+    </div>
+  );
 }
