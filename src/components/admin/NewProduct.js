@@ -16,7 +16,7 @@ export  default function NewProduct () {
     const [images, setImages] = useState([]);
     const [imagesPreview, setImagesPreview] = useState([]);
     
-    const { loading, isProductCreated, error } = useSelector( state => state.productState)
+    const { loading, isProductCreated, error } = useSelector( state => state.products)
 
     const categories = [
         'Electronics',

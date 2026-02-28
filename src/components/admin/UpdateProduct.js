@@ -18,7 +18,7 @@ export default function UpdateProduct () {
     const [imagesPreview, setImagesPreview] = useState([]);
     const { id:productId } = useParams();
     
-    const { loading, isProductUpdated, error, product } = useSelector( state => state.productState)
+    const { loading, isProductUpdated, error, product } = useSelector( state => state.products)
 
     const categories = [
         'Electronics',
