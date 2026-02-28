@@ -175,7 +175,7 @@ export  default function NewProduct () {
                                     <div className='custom-file'>
                                         <input
                                             type='file'
-                                            name='product_images'
+                                            name='images'
                                             className='custom-file-input'
                                             id='customFile'
                                             multiple
