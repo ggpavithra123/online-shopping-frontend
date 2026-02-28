@@ -78,7 +78,7 @@ export const createNewProduct = productData => async (dispatch) => {
     };
 
     const { data } = await api.post(
-      `/api/v1/admin/product/new`,
+      `/api/v1/product/new`,
       productData,
       config
     );
