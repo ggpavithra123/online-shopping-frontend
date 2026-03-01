@@ -23,7 +23,7 @@ export default function ProductDetail() {
     product = {},
     isReviewSubmitted,
     error,
-  } = useSelector((state) => state.product);
+  } = useSelector((state) => state.productState);
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.authState);
   const { id } = useParams();
