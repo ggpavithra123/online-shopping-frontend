@@ -18,12 +18,12 @@ import { Modal } from "react-bootstrap";
 import ProductReview from "./ProductReview";
 
 export default function ProductDetail() {
-  const {
-    loading,
-    product = {},
-    isReviewSubmitted,
-    error,
-  } = useSelector((state) => state.productState);
+const {
+  loading,
+  product,
+  isReviewSubmitted,
+  error,
+} = useSelector((state) => state.product);
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.authState);
   const { id } = useParams();
