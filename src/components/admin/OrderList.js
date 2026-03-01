@@ -1,107 +1,121 @@
-import { Fragment, useEffect } from "react"
-import { Button } from "react-bootstrap"
-import { useDispatch, useSelector } from "react-redux"
-import { Link } from "react-router-dom"
-import { deleteOrder, adminOrders as adminOrdersAction } from "../../actions/orderActions"
-import { clearError, clearOrderDeleted } from "../../slices/orderSlice"
-import Loader from '../Layouts/Loader';
-import { MDBDataTable} from 'mdbreact';
-import {toast } from 'react-toastify'
-import Sidebar from "./Sidebar"
+import { Fragment, useEffect } from "react";
+import { Button } from "react-bootstrap";
+import { useDispatch, useSelector } from "react-redux";
+import { Link } from "react-router-dom";
+import { deleteOrder, adminOrders as adminOrdersAction } from "../../actions/orderActions";
+import { clearError, clearOrderDeleted } from "../../slices/orderSlice";
+import Loader from "../Layouts/Loader";
+import { MDBDataTable } from "mdbreact";
+import { toast } from "react-toastify";
+import Sidebar from "./Sidebar";
 
 export default function OrderList() {
-    const { adminOrders = [], loading = true, error, isOrderDeleted }  = useSelector(state => state.orderState)
-
     const dispatch = useDispatch();
+
+    const { adminOrders = [], loading, error, isOrderDeleted } =
+        useSelector((state) => state.orderState);
+
+    // 🔎 DEBUG LOGS
+    useEffect(() => {
+        console.log("========== ORDER PAGE DEBUG ==========");
+        console.log("Redux orderState:", {
+            adminOrders,
+            loading,
+            error,
+            isOrderDeleted
+        });
+        console.log("======================================");
+    }, [adminOrders, loading, error, isOrderDeleted]);
+
+    const deleteHandler = (id) => {
+        console.log("Deleting Order ID:", id);
+        dispatch(deleteOrder(id));
+    };
 
     const setOrders = () => {
         const data = {
-            columns : [
-                {
-                    label: 'ID',
-                    field: 'id',
-                    sort: 'asc'
-                },
-                {
-                    label: 'Number of Items',
-                    field: 'noOfItems',
-                    sort: 'asc'
-                },
-                {
-                    label: 'Amount',
-                    field: 'amount',
-                    sort: 'asc'
-                },
-                {
-                    label: 'Status',
-                    field: 'status',
-                    sort: 'asc'
-                },
-                {
-                    label: 'Actions',
-                    field: 'actions',
-                    sort: 'asc'
-                }
+            columns: [
+                { label: "ID", field: "id", sort: "asc" },
+                { label: "Number of Items", field: "noOfItems", sort: "asc" },
+                { label: "Amount", field: "amount", sort: "asc" },
+                { label: "Status", field: "status", sort: "asc" },
+                { label: "Actions", field: "actions", sort: "asc" }
             ],
-            rows : []
-        }
+            rows: []
+        };
 
-        adminOrders.forEach( order => {
+        adminOrders.forEach((order) => {
             data.rows.push({
                 id: order._id,
-                noOfItems: order.orderItems.length,
-                amount : `$${order.totalPrice}`,
-                status: <p style={{color: order.orderStatus.includes('Processing') ? 'red' : 'green'}}>{order.orderStatus}</p> ,
+                noOfItems: order.orderItems?.length || 0,
+                amount: `$${order.totalPrice}`,
+                status: (
+                    <p
+                        style={{
+                            color: order.orderStatus === "Processing"
+                                ? "red"
+                                : "green"
+                        }}
+                    >
+                        {order.orderStatus}
+                    </p>
+                ),
                 actions: (
                     <Fragment>
-                        <Link to={`/admin/order/${order._id}`} className="btn btn-primary"> <i className="fa fa-pencil"></i></Link>
-                        <Button onClick={e => deleteHandler(e, order._id)} className="btn btn-danger py-1 px-2 ml-2">
+                        <Link
+                            to={`/admin/order/${order._id}`}
+                            className="btn btn-primary btn-sm"
+                        >
+                            <i className="fa fa-pencil"></i>
+                        </Link>
+
+                        <Button
+                            onClick={() => deleteHandler(order._id)}
+                            className="btn btn-danger btn-sm ms-2"
+                        >
                             <i className="fa fa-trash"></i>
                         </Button>
                     </Fragment>
                 )
-            })
-        })
+            });
+        });
 
         return data;
-    }
-
-    const deleteHandler = (e, id) => {
-        e.target.disabled = true;
-        dispatch(deleteOrder(id))
-    }
+    };
 
     useEffect(() => {
-        if(error) {
-            toast(error, {
+        if (error) {
+            toast.error(error, {
                 position: "bottom-center",
-                type: 'error',
-                onOpen: ()=> { dispatch(clearError()) }
-            })
-            return
-        }
-        if(isOrderDeleted) {
-            toast('Order Deleted Succesfully!',{
-                type: 'success',
-                position: "bottom-center",
-                onOpen: () => dispatch(clearOrderDeleted())
-            })
+                onOpen: () => dispatch(clearError())
+            });
             return;
         }
 
-        dispatch(adminOrdersAction)
-    },[dispatch, error, isOrderDeleted])
+        if (isOrderDeleted) {
+            toast.success("Order Deleted Successfully!", {
+                position: "bottom-center",
+                onOpen: () => dispatch(clearOrderDeleted())
+            });
+        }
 
+        console.log("Fetching Admin Orders...");
+        dispatch(adminOrdersAction()); // ✅ FIXED
+
+    }, [dispatch, error, isOrderDeleted]);
 
     return (
         <div className="row">
-        <div className="col-12 col-md-2">
-                <Sidebar/>
-        </div>
-        <div className="col-12 col-md-10">
-            <h1 className="my-4">Order List</h1>
-            <Fragment>
-                {loading ? <Loader/> : 
+            <div className="col-12 col-md-2">
+                <Sidebar />
+            </div>
+
+            <div className="col-12 col-md-10">
+                <h1 className="my-4">Order List</h1>
+
+                {loading ? (
+                    <Loader />
+                ) : (
                     <MDBDataTable
                         data={setOrders()}
                         bordered
@@ -109,9 +123,8 @@ export default function OrderList() {
                         hover
                         className="px-3"
                     />
-                }
-            </Fragment>
+                )}
+            </div>
         </div>
-    </div>
-    )
+    );
 }
