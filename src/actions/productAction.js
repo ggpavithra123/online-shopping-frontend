@@ -131,7 +131,8 @@ export const getReviews =  id => async (dispatch) => {
     try {  
         dispatch(reviewsRequest()) 
         const { data }  =  await api.get(`/api/v1/admin/reviews`,{params: {id}});
-        dispatch(reviewsSuccess(data))
+        console.log("API RESPONSE 👉", data);
+        dispatch(reviewsSuccess(data));
     } catch (error) {
         //handle error
         dispatch(reviewsFail(error.response.data.message))
