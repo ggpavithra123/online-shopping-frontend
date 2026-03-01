@@ -91,7 +91,7 @@ export const adminOrders = () => async (dispatch) => {
 export const deleteOrder = (id) => async (dispatch) => {
   try {
     dispatch(deleteOrderRequest());
-    await axios.delete(`/api/v1/admin/order/${id}`);
+    await api.delete(`/api/v1/admin/order/${id}`);
     dispatch(deleteOrderSuccess());
   } catch (error) {
     dispatch(deleteOrderFail(error.response?.data?.message));
@@ -102,7 +102,7 @@ export const deleteOrder = (id) => async (dispatch) => {
 export const updateOrder = (id, orderData) => async (dispatch) => {
   try {
     dispatch(updateOrderRequest());
-    const { data } = await axios.put(
+    const { data } = await api.put(
       `/api/v1/admin/order/${id}`,
       orderData
     );
