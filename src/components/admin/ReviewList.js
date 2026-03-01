@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useState } from "react";
 import { Button } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
 import { deleteReview, getReviews } from "../../actions/productAction";
 import { clearError, clearReviewDeleted } from "../../slices/productSlice";
 import Loader from "../Layouts/Loader";
@@ -10,36 +11,38 @@ import Sidebar from "./Sidebar";
 
 export default function ReviewList() {
 
+    const { id } = useParams(); // ✅ get productId from URL
+    const dispatch = useDispatch();
+
     const { reviews, loading, error, isReviewDeleted } =
         useSelector(state => state.product);
 
-    const [productId, setProductId] = useState("");
-    const dispatch = useDispatch();
+    const [productId, setProductId] = useState(id || "");
 
-    const deleteHandler = (e, id) => {
+    // ✅ AUTO LOAD ON PAGE LOAD
+    useEffect(() => {
+        if (productId) {
+            dispatch(getReviews(productId));
+        }
+    }, [dispatch, productId]);
+
+    const deleteHandler = (e, reviewId) => {
         e.currentTarget.disabled = true;
-        dispatch(deleteReview(productId, id));
+        dispatch(deleteReview(productId, reviewId));
     };
 
     const submitHandler = (e) => {
         e.preventDefault();
-
-        if (!productId.trim()) {
-            toast("Please enter a Product ID", {
-                type: "warning",
-                position: toast.POSITION.BOTTOM_CENTER
-            });
-            return;
+        if (productId.trim()) {
+            dispatch(getReviews(productId));
         }
-
-        dispatch(getReviews(productId));
     };
 
     useEffect(() => {
         if (error) {
             toast(error, {
                 type: "error",
-                position: toast.POSITION.BOTTOM_CENTER,
+                position: "bottom-center",
                 onOpen: () => dispatch(clearError())
             });
         }
@@ -47,7 +50,7 @@ export default function ReviewList() {
         if (isReviewDeleted) {
             toast("Review Deleted Successfully!", {
                 type: "success",
-                position: toast.POSITION.BOTTOM_CENTER,
+                position: "bottom-center",
                 onOpen: () => dispatch(clearReviewDeleted())
             });
 
@@ -67,7 +70,7 @@ export default function ReviewList() {
         rows: reviews?.map(review => ({
             id: review._id,
             rating: review.rating,
-            user: review.user?.name || review.user || "User",
+            user: review.user?.name || review.user,
             comment: review.comment,
             actions: (
                 <Button
