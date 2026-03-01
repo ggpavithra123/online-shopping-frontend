@@ -16,48 +16,11 @@ export default function ReviewList() {
     const [productId, setProductId] = useState("");
     const dispatch = useDispatch();
 
-    // 🔹 Prepare table data
-    const setReviews = () => {
-        const data = {
-            columns: [
-                { label: "ID", field: "id", sort: "asc" },
-                { label: "Rating", field: "rating", sort: "asc" },
-                { label: "User", field: "user", sort: "asc" },
-                { label: "Comment", field: "comment", sort: "asc" },
-                { label: "Actions", field: "actions" }
-            ],
-            rows: []
-        };
-
-        reviews?.forEach(review => {
-            data.rows.push({
-                id: review._id,
-                rating: review.rating,
-                user: review.user?.name || "Deleted User",
-                comment: review.comment,
-                actions: (
-                    <Fragment>
-                        <Button
-                            onClick={(e) => deleteHandler(e, review._id)}
-                            className="btn btn-danger py-1 px-2"
-                        >
-                            <i className="fa fa-trash"></i>
-                        </Button>
-                    </Fragment>
-                )
-            });
-        });
-
-        return data;
-    };
-
-    // 🔹 Delete handler
     const deleteHandler = (e, id) => {
         e.currentTarget.disabled = true;
         dispatch(deleteReview(productId, id));
     };
 
-    // 🔹 Search reviews
     const submitHandler = (e) => {
         e.preventDefault();
 
@@ -72,13 +35,11 @@ export default function ReviewList() {
         dispatch(getReviews(productId));
     };
 
-    // 🔹 Handle errors & delete success
     useEffect(() => {
-
         if (error) {
             toast(error, {
-                position: toast.POSITION.BOTTOM_CENTER,
                 type: "error",
+                position: toast.POSITION.BOTTOM_CENTER,
                 onOpen: () => dispatch(clearError())
             });
         }
@@ -95,6 +56,30 @@ export default function ReviewList() {
 
     }, [dispatch, error, isReviewDeleted, productId]);
 
+    const data = {
+        columns: [
+            { label: "ID", field: "id" },
+            { label: "Rating", field: "rating" },
+            { label: "User", field: "user" },
+            { label: "Comment", field: "comment" },
+            { label: "Actions", field: "actions" }
+        ],
+        rows: reviews?.map(review => ({
+            id: review._id,
+            rating: review.rating,
+            user: review.user?.name || review.user || "User",
+            comment: review.comment,
+            actions: (
+                <Button
+                    onClick={(e) => deleteHandler(e, review._id)}
+                    className="btn btn-danger py-1 px-2"
+                >
+                    <i className="fa fa-trash"></i>
+                </Button>
+            )
+        })) || []
+    };
+
     return (
         <div className="row">
             <div className="col-12 col-md-2">
@@ -104,7 +89,6 @@ export default function ReviewList() {
             <div className="col-12 col-md-10">
                 <h1 className="my-4">Review List</h1>
 
-                {/* Search Form */}
                 <div className="row justify-content-center mt-4">
                     <div className="col-6">
                         <form onSubmit={submitHandler}>
@@ -129,13 +113,12 @@ export default function ReviewList() {
                     </div>
                 </div>
 
-                {/* Table */}
                 <div className="mt-4">
                     {loading ? (
                         <Loader />
                     ) : (
                         <MDBDataTable
-                            data={setReviews()}
+                            data={data}
                             bordered
                             striped
                             hover
@@ -143,7 +126,6 @@ export default function ReviewList() {
                         />
                     )}
                 </div>
-
             </div>
         </div>
     );

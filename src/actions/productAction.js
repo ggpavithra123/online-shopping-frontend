@@ -126,19 +126,23 @@ export const updateProduct  =  (id, productData) => async (dispatch) => {
 }
 
 
-export const getReviews =  id => async (dispatch) => {
+export const getReviews = id => async (dispatch) => {
+    try {
+        dispatch(reviewsRequest());
 
-    try {  
-        dispatch(reviewsRequest()) 
-        const { data }  =  await api.get(`/api/v1/admin/reviews`,{params: {id}});
-        console.log("API RESPONSE 👉", data);
-        dispatch(reviewsSuccess(data));
+        const { data } = await api.get(
+            `/api/v1/admin/reviews`,
+            { params: { id } }
+        );
+
+        dispatch(reviewsSuccess(data.reviews)); // ✅ FIXED
+
     } catch (error) {
-        //handle error
-        dispatch(reviewsFail(error.response.data.message))
+        dispatch(
+            reviewsFail(error.response?.data?.message || error.message)
+        );
     }
-    
-}
+};
 
 export const deleteReview =  (productId, id) => async (dispatch) => {
 

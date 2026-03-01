@@ -182,13 +182,13 @@ const productSlice = createSlice({
         loading: true,
       };
     },
-    reviewsSuccess(state, action) {
-      return {
+    reviewsSuccess(state, action){
+    return {
         ...state,
         loading: false,
-        reviews: action.payload.reviews || action.payload,
-      };
-    },
+        reviews: action.payload   // ✅ because we send data.reviews
+    }
+},
     reviewsFail(state, action) {
       return {
         ...state,
